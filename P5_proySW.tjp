@@ -19,7 +19,7 @@ project pSix "Web Game"  2024-12-15 +5m {
   # the project reports. If not specified, the current day will be
   # used, but this will likely be outside of the project range, so it
   # can't be seen in the reports.
-  now 2025-02-25-13:00
+  now 2025-04-03-13:00
   # The currency for all money values is the US Dollar.
   currency "EUR"
 
@@ -69,11 +69,58 @@ resource dev3 "Peter Green" {
   email "kkk@unizar.es"
 }
 
+resource me "Tahir Berga" {
+  email "875112@unizar.es"
+  maxunits 0.5   #4 horas suponiendo que las jornadas son de 8
+}
+
+
 # Now we specify the work packages. The whole project is described as
 # a task that contains subtasks. These subtasks are then broken down
 # into smaller tasks and so on. The innermost tasks describe the real
 # work and have resources allocated to them. Many attributes of tasks
 # are inherited from the enclosing task. This saves you a lot of typing.
+#Front
+task tmobile "Mobile Front End" {
+  purge chargeset
+  chargeset mFront
+  responsible dev3       # O el recurso que consideres apropiado
+  depends WMGame.twebF   # Establece dependencia si es necesaria
+
+  task tmobileDesign "Mobile UI/UX Design" {
+    effort 8d
+    allocate dev3, me
+  }
+  task tmobileDev "Mobile App Development" {
+    effort 15d
+    allocate dev2, me
+    depends tmobile.tmobileDesign
+  }
+  task tmobileTest "Mobile App Testing" {
+    effort 5d
+    allocate dev2, me
+    depends tmobile.tmobileDev
+  }
+}
+
+#Back
+task tcloud "Cloud Deployment for Back-End" {
+  purge chargeset
+  chargeset back
+  responsible dev1
+  depends WMGame.tback  # Se inicia una vez finalizado el back end
+
+  task tevalCloud "Evaluate Cloud Providers" {
+    effort 3d
+    allocate dev1, me
+  }
+  task tdeployCloud "Deploy Back-End on Cloud" {
+    effort 2d
+    allocate dev1, me
+    depends tcloud.tevalCloud
+  }
+}
+
 task WMGame "Web & Mobile Game" {
 
   # All work-related costs will be booked to this account unless the
@@ -144,19 +191,27 @@ task WMGame "Web & Mobile Game" {
       effort 6d
       allocate dev1
       depends WMGame.twebF.tFEc
-    }    
+    }
   }
 
   task ttest "Acceptance tests" {
+      start 2025-05-10
       effort 10d
       allocate boss
       allocate dev2
       actual:effort 20d
       depends WMGame.twebF
       depends WMGame.tback
+      
+      journalentry 2025-04-03 "Actualización de informe" {
+        author me
+        alert yellow
+        summary "Se ha actualizado la fecha del informe y se fija el inicio de pruebas para el 10 de mayo."
+        }
       }
 
-    
+
+
   task deliveries "Milestones" {
 
     # Some milestones have customer payments associated with them. We
@@ -270,6 +325,18 @@ taskreport overview "" {
   caption 'All effort values are in man days.'
 }
 
+taskreport initialPlan "" {
+  scenarios plan
+  headline "Planificación Inicial del Proyecto"
+  columns bsi { title 'WBS' },
+          name, start, end, effort, cost,
+          revenue, chart { ${TaskTip} }
+  timeformat "%a %Y-%m-%d"
+  loadunit days
+  hideresource @all
+  balance cost rev
+  caption 'Valores de esfuerzo.'
+}
 
 # Macro to set the background color of a cell according to the alert
 # level of the task.
