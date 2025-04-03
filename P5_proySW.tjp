@@ -71,7 +71,7 @@ resource dev3 "Peter Green" {
 
 resource me "Tahir Berga" {
   email "875112@unizar.es"
-  maxunits 0.5   #4 horas suponiendo que las jornadas son de 8
+  maxunits 0.5   #4 horas suponiendo que las jornadas son de 8.
 }
 
 
